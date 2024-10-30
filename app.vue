@@ -1,6 +1,4 @@
 <script setup>
-import Index from "~/pages/index.vue";
-
 provideHeadlessUseId(() => useId())
 </script>
 
