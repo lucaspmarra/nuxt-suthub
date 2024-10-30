@@ -20,6 +20,7 @@ export const useRecipesHandler = () => {
     }
 
     const getRecipesTagged = (tag) => {
+        console.log('💠 getRecipesTagged called with: ', tag)
         try {
             store.getRecipesByTag(tag).then(() => true);
         } catch (e) {
