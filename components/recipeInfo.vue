@@ -20,8 +20,9 @@ export default {
 
 <template>
   <div class="flex flex-row">
-    <div class="w-1/3">
-      <img class="w-full rounded-lg shadow-md" :src="recipe.image" :alt="recipe.name"/>
+    <div class="w-1/6">
+      <img class="w-full rounded-lg shadow-md transition duration-500 ease-out transform hover:scale-[300%] cursor-zoom-in"
+           :src="recipe.image" :alt="recipe.name"/>
     </div>
     <div class="w-2/3 pl-6">
       <div class="px-6">
@@ -33,7 +34,7 @@ export default {
         <p class="text-gray-700 text-base">
           Porções:
           <span class="text-2xl">
-            <span v-for="i in recipe.servings" :key="i">🍕</span>
+            <span v-for="i in recipe.servings" :key="i">🥗</span>
           </span>
         </p>
 

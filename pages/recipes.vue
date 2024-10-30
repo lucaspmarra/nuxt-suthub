@@ -12,13 +12,14 @@ import {CheckIcon, ChevronUpDownIcon} from '@heroicons/vue/20/solid'
 import {useRecipesHandler} from '~/composables/useRecipes'
 import {useRecipesStore} from '~/stores/recipe-store'
 import RecipeInfo from "~/components/recipeInfo.vue";
+import {InformationCircleIcon} from '@heroicons/vue/24/outline';
 
 const recipeStore = useRecipesStore()
 const {getAllTags, getRecipesTagged} = useRecipesHandler()
 
 const tags = computed(() => recipeStore.recipes_tag || [])
 const recipes = computed(() => recipeStore.recipes_tagged || [])
-
+const recipesLoading = ref(false)
 const tagSelected = ref([])
 const recipeSelected = ref(null)
 
@@ -42,31 +43,32 @@ const filteredRecipes = computed(() =>
         )
 )
 
+const getRecipesUsingTag = async (tags) => {
+  try {
+    recipesLoading.value = true;
+    const receitasDaTag = await getRecipesTagged(tags);
+    console.log(receitasDaTag)
+  } catch (e) {
+    console.log(e)
+  } finally {
+    setTimeout(() => {
+      recipesLoading.value = false;
+    }, 2000)
 
-watch(tags, (value) => {
-  if (value.length > 0) {
-    tagSelected.value = [value[0], value[1]]
   }
-})
 
-watch(recipes, (value) => {
-  if (value.length > 0) {
-    recipeSelected.value = value[0]
-  }
-})
+}
 
-watch(tagSelected, async (newTags) => {
-  console.log('Tags selecionadas:', newTags);
+watch(tagSelected, async (value) => {
+  console.log('Tags selecionadas:', value);
   recipeSelected.value = null;
   recipes.value = [];
 
-  if (newTags.length === 0) {
-    // ...
+  if (value.length === 0) {
+    // do nothing
   } else {
-    for (const tag of newTags) {
-      const receitasDaTag = await getRecipesTagged(tag);
-      recipes.value = [...recipes.value, ...receitasDaTag];
-    }
+
+    await getRecipesUsingTag(value);
   }
 });
 
@@ -81,7 +83,7 @@ onMounted(async () => {
       <h2 class="text-2xl font-bold mb-8 text-gray-900">Receitas</h2>
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div>
-          <label for="tags">Tags</label>
+          <label for="tags">Categorias</label>
           <Combobox id="tags" v-model="tagSelected" multiple>
             <div class="relative mt-1">
               <div
@@ -144,7 +146,7 @@ onMounted(async () => {
           </Combobox>
         </div>
         <div>
-          <label for="tags">Tags</label>
+          <label for="tags">Receitas</label>
           <Combobox id="tags" v-model="recipeSelected">
             <div class="relative mt-1">
               <div
@@ -207,9 +209,22 @@ onMounted(async () => {
           </Combobox>
         </div>
       </div>
-
-      <div v-if="recipeSelected" class="mt-6">
-        <RecipeInfo :recipe="recipeSelected"/>
+      <div class="flex flex-col items-center justify-center min-h-[200px]">
+        <div v-if="!tagSelected.length" class="flex items-center space-x-2 text-gray-600">
+          <InformationCircleIcon class="h-6 w-6 text-blue-500"/>
+          <p>Por favor, selecione uma categoria.</p>
+        </div>
+        <div v-else-if="!recipes.length" class="flex items-center space-x-2 text-gray-600">
+          <InformationCircleIcon class="h-6 w-6 text-blue-500"/>
+          <p>Nenhuma receita encontrada para esta categoria.</p>
+        </div>
+        <div v-else-if="!recipeSelected" class="flex items-center space-x-2 text-gray-600">
+          <InformationCircleIcon class="h-6 w-6 text-blue-500"/>
+          <p>Por favor, selecione uma receita.</p>
+        </div>
+        <div v-else class="mt-6">
+          <RecipeInfo :recipe="recipeSelected"/>
+        </div>
       </div>
     </div>
   </main>
