@@ -14,6 +14,11 @@ import {useRecipesStore} from '~/stores/recipe-store'
 import RecipeInfo from "~/components/recipeInfo.vue";
 import {InformationCircleIcon} from '@heroicons/vue/24/outline';
 
+useHead({
+  title: 'Recipes',
+})
+
+
 const recipeStore = useRecipesStore()
 const {getAllTags, getRecipesTagged} = useRecipesHandler()
 

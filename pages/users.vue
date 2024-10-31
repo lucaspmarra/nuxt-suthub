@@ -2,6 +2,11 @@
 import {useUserStore} from "~/stores/user-store";
 import {MagnifyingGlassIcon} from '@heroicons/vue/24/outline'
 
+useHead({
+  title: 'Users',
+})
+
+
 const userStore = useUserStore();
 
 const users = computed(() => userStore.users_list || []);
