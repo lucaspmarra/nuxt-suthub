@@ -10,10 +10,10 @@ useHead({
 </script>
 
 <template>
-  <div>
-    <RegisterComponent/>
-    <div
-        class="flex items-center justify-center">
+  <div class="flex flex-col items-center justify-center min-h-screen overflow-hidden">
+    <div class="p-1 md:p-1 w-full max-w-3xl"> <RegisterComponent/>
+    </div>
+    <div class="flex items-center justify-center">
       <NuxtLink to="/">Voltar para o ínicio</NuxtLink>
     </div>
   </div>
