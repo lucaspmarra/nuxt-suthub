@@ -2,6 +2,11 @@
 definePageMeta({
   layout: 'register'
 })
+
+useHead({
+  title: 'Register',
+})
+
 </script>
 
 <template>

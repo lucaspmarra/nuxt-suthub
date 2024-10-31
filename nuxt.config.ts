@@ -8,6 +8,10 @@ export default defineNuxtConfig({
         storesDirs: ['./stores/**'],
     },
     app: {
-        baseURL: '/nuxt-suthub/'
+        baseURL: '/nuxt-suthub/',
+        head: {
+            charset: 'utf-8',
+            viewport: 'width=device-width, initial-scale=1',
+        }
     }
 })

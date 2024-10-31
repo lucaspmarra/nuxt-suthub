@@ -1,3 +1,30 @@
+<script setup>
+import {onMounted, computed} from 'vue';
+import HomeSvg from '~/assets/home.svg';
+import {useUserStore} from "~/stores/user-store";
+
+useHead({
+  title: 'Home',
+})
+
+const userStore = useUserStore();
+
+const isRegistered = computed(() => userStore.isUserLoggedIn);
+
+const continueWithoutRegister = () => {
+  userStore.isUserLoggedIn = true;
+};
+
+onMounted(() => {
+  const isLoggedIn = localStorage.getItem('is_user_logged_in');
+  if (isLoggedIn === 'true') {
+    userStore.isUserLoggedIn = true;
+  }
+});
+
+
+</script>
+
 <template>
   <div class="container mx-auto flex justify-center items-center p-4">
     <div class="shadow-md bg-white w-1/2 p-4 rounded-lg">
@@ -31,23 +58,3 @@
   </div>
 </template>
 
-<script setup>
-import {onMounted, computed} from 'vue';
-import HomeSvg from '~/assets/home.svg';
-import {useUserStore} from "~/stores/user-store";
-
-const userStore = useUserStore();
-
-const isRegistered = computed(() => userStore.isUserLoggedIn);
-
-const continueWithoutRegister = () => {
-  userStore.isUserLoggedIn = true;
-};
-
-onMounted(() => {
-  const isLoggedIn = localStorage.getItem('is_user_logged_in');
-  if (isLoggedIn === 'true') {
-    userStore.isUserLoggedIn = true;
-  }
-});
-</script>
