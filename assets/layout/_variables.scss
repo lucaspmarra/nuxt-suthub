@@ -1,0 +1,6 @@
+@mixin flex-padding($padding: 12px) {
+  padding: $padding;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}

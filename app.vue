@@ -1,6 +1,12 @@
+<script setup>
+provideHeadlessUseId(() => useId())
+</script>
+
 <template>
   <div>
-    <NuxtRouteAnnouncer />
-    <NuxtWelcome />
+    <NuxtLoadingIndicator />
+    <NuxtLayout>
+      <NuxtPage/>
+    </NuxtLayout>
   </div>
 </template>
