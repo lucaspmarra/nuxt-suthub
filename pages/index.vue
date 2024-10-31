@@ -27,7 +27,7 @@ onMounted(() => {
 
 <template>
   <div class="container mx-auto flex justify-center items-center p-4">
-    <div class="shadow-md bg-white w-1/2 p-4 rounded-lg">
+    <div class="shadow-md bg-white w-full md:w-1/2 p-4 rounded-lg">
       <div v-if="!isRegistered">
         <div class="flex justify-center -mt-20">
           <HomeSvg class="h-[600px]" :fontControlled="false"/>
@@ -41,18 +41,95 @@ onMounted(() => {
         </p>
       </div>
       <div v-else>
-        <h1>Opções de Navegação</h1>
-        <ul>
-          <li>
-            <NuxtLink to="/register">Registro</NuxtLink>
-          </li>
-          <li>
-            <NuxtLink to="/recipes">Receitas</NuxtLink>
-          </li>
-          <li>
-            <NuxtLink to="/users">Usuários</NuxtLink>
-          </li>
-        </ul>
+        <section class="relative dark:bg-gray-900">
+          <img src="~/assets/oc-project-development.png" alt="Icone 1"
+               class="absolute top-[-60px] md:top-[-50px] left-[-60px] md:left-[-65px] w-32 md:w-44 -rotate-12" />
+
+          <img src="~/assets/lemonadepixel_kidschores-49.png" alt="Icone 3"
+               class="absolute bottom-[-25px] right-[-25px] w-12 h-10 rotate-12"/>
+
+          <div class="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16">
+            <h1
+                class="mb-4 text-4xl font-extrabold tracking-tight leading-none text-gray-900 md:text-5xl lg:text-6xl dark:text-white"
+            >
+              Investimos no potencial do mundo
+            </h1>
+            <p
+                class="mb-8 text-lg font-normal text-gray-500 lg:text-xl sm:px-16 lg:px-48 dark:text-gray-400"
+            >
+              Aqui na SUTHUB, focamos em mercados onde tecnologia, inovação e capital
+              podem liberar valor a longo prazo e impulsionar o crescimento
+              econômico.
+            </p>
+            <div
+                class="flex flex-col space-y-4 sm:flex-row sm:justify-center sm:space-y-0 gap-4"
+            >
+              <a
+                  @click.prevent="navigateTo('register')"
+                  class="cursor-pointer inline-flex justify-center items-center py-3 px-5 text-base font-medium text-center dark:text-white rounded-lg text-black bg-purple-400 transition-all ease-in-out delay-50 hover:bg-purple-500 focus:outline-none dark:focus:ring-blue-900"
+              >
+                Registrar-se
+                <svg
+                    class="w-3.5 h-3.5 ms-2 rtl:rotate-180"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 14 10"
+                >
+                  <path
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M1 5h12m0 0L9 1m4 4L9 9"
+                  />
+                </svg>
+              </a>
+              <a
+                  @click.prevent="navigateTo('recipes')"
+                  class="cursor-pointer inline-flex justify-center items-center py-3 px-5 text-base font-medium text-center dark:text-white rounded-lg text-black bg-purple-400 transition-all ease-in-out delay-50 hover:bg-purple-500 focus:outline-none dark:focus:ring-blue-900"
+              >
+                Busca de Receitas
+                <svg
+                    class="w-3.5 h-3.5 ms-2 rtl:rotate-180"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 14 10"
+                >
+                  <path
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M1 5h12m0 0L9 1m4 4L9 9"
+                  />
+                </svg>
+              </a>
+              <a
+                  @click.prevent="navigateTo('users')"
+                  class="cursor-pointer inline-flex justify-center items-center py-3 px-5 text-base font-medium text-center dark:text-white rounded-lg text-black bg-purple-400 transition-all ease-in-out delay-50 hover:bg-purple-500 focus:outline-none dark:focus:ring-blue-900"
+              >
+                Busca de Usuários
+                <svg
+                    class="w-3.5 h-3.5 ms-2 rtl:rotate-180"
+                    aria-hidden="true"
+                    xmlns="http://www.w3.org/2000/svg"
+                    fill="none"
+                    viewBox="0 0 14 10"
+                >
+                  <path
+                      stroke="currentColor"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      stroke-width="2"
+                      d="M1 5h12m0 0L9 1m4 4L9 9"
+                  />
+                </svg>
+              </a>
+            </div>
+          </div>
+        </section>
       </div>
     </div>
   </div>
