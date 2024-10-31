@@ -3,7 +3,7 @@
 </script>
 
 <template>
-  <div class="h-16 bg-surface-card flex items-center transition-all duration-300 bg-white m-1 rounded-md">
+  <div class="h-16 flex items-center transition-all duration-300 bg-white m-2 rounded-md">
     <div class="flex items-center w-80">
       <button class="mr-2 flex items-center justify-center w-10 h-10 rounded-full text-text-color">
         <i class="pi pi-bars text-xl"></i>
@@ -16,10 +16,9 @@
     <div class="ml-auto flex gap-4 p-4">
       <div class="hidden lg:flex">
         <div class="flex gap-4">
-
           <button type="button"
                   class="flex items-center justify-start w-auto h-auto p-2 rounded-lg text-text-color hover:bg-surface-hover transition-all duration-300">
-            <NuxtLink to="/register">Registro</NuxtLink>
+            <NuxtLink to="/register" exactActiveClass="font-bold">Registro</NuxtLink>
           </button>
           <button type="button"
                   class="flex items-center justify-start w-auto h-auto p-2 rounded-lg text-text-color hover:bg-surface-hover transition-all duration-300">

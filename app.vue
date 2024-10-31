@@ -4,6 +4,7 @@ provideHeadlessUseId(() => useId())
 
 <template>
   <div>
+    <NuxtLoadingIndicator />
     <NuxtLayout>
       <NuxtPage/>
     </NuxtLayout>
