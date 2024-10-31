@@ -42,7 +42,7 @@ const gender = computed(() => {
     <div class="flex justify-end p-2">
       <button
           @click="openMap()"
-          class="bg-purple-300 text-black px-4 py-2 rounded transition-all ease-in-out delay-50 hover:bg-purple-400 focus:outline-none break-words flex items-center justify-center"
+          class=" text-black px-4 py-2 rounded bg-purple-300 transition-all ease-in-out delay-50 hover:bg-purple-400 focus:outline-none break-words flex items-center justify-center"
       >
         <MapPinIcon class="w-4 h-4 mr-2"/>
         Ver no mapa
