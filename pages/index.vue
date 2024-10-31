@@ -32,12 +32,22 @@
 </template>
 
 <script setup>
-import {ref} from 'vue';
+import {onMounted, computed} from 'vue';
 import HomeSvg from '~/assets/home.svg';
+import {useUserStore} from "~/stores/user-store";
 
-const isRegistered = ref(false);
+const userStore = useUserStore();
+
+const isRegistered = computed(() => userStore.isUserLoggedIn);
 
 const continueWithoutRegister = () => {
-  isRegistered.value = true;
+  userStore.isUserLoggedIn = true;
 };
+
+onMounted(() => {
+  const isLoggedIn = localStorage.getItem('is_user_logged_in');
+  if (isLoggedIn === 'true') {
+    userStore.isUserLoggedIn = true;
+  }
+});
 </script>
