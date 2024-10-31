@@ -1,17 +1,26 @@
 <script setup lang="ts">
 import {useUserStore} from "~/stores/user-store.ts";
-import {ref, computed, watch} from 'vue'
+import {computed, ref, watch} from 'vue'
 import {
-  Listbox, ListboxButton, ListboxOptions, ListboxOption,
-  TransitionRoot,
-  TransitionChild,
   Dialog,
   DialogPanel,
   DialogTitle,
+  Listbox,
+  ListboxButton,
+  ListboxOption,
+  ListboxOptions,
+  TransitionChild,
+  TransitionRoot,
 } from '@headlessui/vue'
 import {ChevronUpDownIcon} from '@heroicons/vue/20/solid'
 
+import {useFormatDate} from "~/composables/formatDate";
 
+interface BreedOptions {
+  [key: string]: string[];
+}
+
+const router = useRouter()
 const userStore = useUserStore();
 const form = ref<IUserRegister>({
   birthDate: '',
@@ -28,17 +37,18 @@ const form = ref<IUserRegister>({
   street: ''
 })
 const step = ref<number>(1);
-const errors = ref({})
+const errors = ref<IUserRegister>({})
 const petTypes = ['cão', 'gato']
-const breeds = {
+const breeds: BreedOptions = {
   'cão': ['Labrador', 'Pastor Alemão', 'Golden Retriever', 'Bulldog', 'Poodle', 'outro'],
   'gato': ['Siamês', 'Persa', 'Maine Coon', 'Angorá', 'British Shorthair', 'outro']
 }
 const availableBreeds = computed(() => {
   return form.value.petType ? breeds[form.value.petType] : []
 })
-const isOpen = ref(false)
-
+const isOpen = ref<boolean>(false)
+const success = ref<boolean>(false);
+const error = ref<boolean>(false);
 
 const maskedCpf = ref<string>('')
 const unmaskedCpf = ref<string>('')
@@ -49,7 +59,7 @@ const today = new Date()
 const minDate = new Date(today.getFullYear() - 65, today.getMonth(), today.getDate()).toISOString().split('T')[0]
 const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate()).toISOString().split('T')[0]
 
-const validateCPF = (cpf) => {
+const validateCPF = (cpf: string) => {
   cpf = cpf.replace(/\D/g, '')
 
   if (cpf.length !== 11) return false
@@ -77,14 +87,14 @@ const validateCPF = (cpf) => {
   return remainder === parseInt(cpf.substring(10, 11));
 }
 
-const formatCurrency = (value) => {
-  const number = value.replace(/\D/g, '')
-  return new Intl.NumberFormat('pt-BR', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2
-  }).format(number / 100)
-}
+const validatefullName = computed(() => {
+  return form.value.fullName.trim().split(/\s+/).length >= 2
+})
 
+const formatCurrency = (value: string) => {
+  const number: any = value.replace(/\D/g, '')
+  return new Intl.NumberFormat('pt-BR', {minimumFractionDigits: 2, maximumFractionDigits: 2}).format(number / 100)
+}
 const searchCEP = async () => {
   console.log(zipcode.value)
   if (zipcode.value.length === 8) {
@@ -104,18 +114,105 @@ const searchCEP = async () => {
   }
 }
 
+const validateForm = () => {
+  errors.value = {} as IUserRegister;
+
+  const cleanedIncome = form.value.monthlyIncome
+      .replace(/\./g, '')
+      .replace(',', '.')
+
+  const incomeNumber = parseFloat(cleanedIncome);
+
+  if (!validatefullName.value) {
+    errors.value.fullName = 'Digite o nome completo.';
+  }
+
+  if (!form.value.birthDate) {
+    errors.value.birthDate = 'Selecione a data de nascimento.';
+  }
+
+  if (!validateCPF(form.value.cpf)) {
+    errors.value.cpf = 'Digite um CPF válido.';
+  }
+
+  if (!form.value.monthlyIncome) {
+    errors.value.monthlyIncome = 'Digite a renda mensal.';
+  }
+
+  if (isNaN(incomeNumber) || incomeNumber < 1000) {
+    errors.value.monthlyIncome = 'A renda mensal deve ser de no mínimo R$ 1.000,00.';
+    console.warn('Erro de validação de renda:', {
+      originalValue: form.value.monthlyIncome,
+      parsedValue: incomeNumber
+    });
+  }
+
+  if (!form.value.cep.length) {
+    errors.value.cep = 'Digite um CEP válido.';
+  }
+
+  if (!form.value.street) {
+    errors.value.street = 'Digite o nome da rua.';
+  }
+
+  if (!form.value.neighborhood) {
+    errors.value.neighborhood = 'Digite o bairro.';
+  }
+
+  if (!form.value.city) {
+    errors.value.city = 'Digite a cidade.';
+  }
+
+  if (form.value.state.length !== 2) {
+    errors.value.state = 'Digite um estado válido (2 letras).';
+  }
+
+  if (!form.value.petType) {
+    errors.value.petType = 'Selecione a espécie do pet.';
+  }
+
+  if (!form.value.petBreed) {
+    errors.value.petBreed = 'Selecione a raça do pet.';
+  } else if (form.value.petBreed === 'outro' && !form.value.customBreed) {
+    errors.value.customBreed = 'Digite a raça do pet.';
+  }
+
+  return Object.keys(errors.value).length === 0;
+};
+
 const handleSubmit = async () => {
-  form.value.monthlyIncome = parseFloat(form.value.monthlyIncome.replace('.', '').replace(',', '.'));
+  if (!validateForm()) return;
 
   console.log('✅ Form submitted: ', form.value);
   userStore.user = form.value;
 
   try {
     const response = await userStore.createUser();
+    showToast(true);
     console.log('✅ User created successfully:', response);
-  } catch (error) {
+  } catch (error: unknown | any) {
     console.log('⚠️ Error in form submission:', error);
+    showToast(false);
   }
+};
+
+const showToast = (isSuccess: boolean) => {
+  if (isSuccess) {
+    success.value = true;
+    error.value = false;
+  } else {
+    success.value = false;
+    error.value = true;
+  }
+
+  setTimeout(() => {
+    success.value = false;
+    error.value = false;
+
+    if (isSuccess) {
+      router.push({path: '/'})
+    }
+  }, 3500);
 };
 
 function closeModal() {
@@ -123,6 +220,7 @@ function closeModal() {
 }
 
 function openModal() {
+  if (!validateForm()) return;
   isOpen.value = true
 }
 
@@ -209,6 +307,8 @@ defineExpose({zipcode, unmaskedCpf})
                 v-model="form.fullName"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
+            <span v-if="errors.fullName" class="text-red-500 text-xs">{{ errors.fullName }}</span>
+
           </div>
 
           <div>
@@ -221,6 +321,7 @@ defineExpose({zipcode, unmaskedCpf})
                 :max="maxDate"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
+            <span v-if="errors.birthDate" class="text-red-500 text-xs">{{ errors.birthDate }}</span>
 
           </div>
 
@@ -234,15 +335,14 @@ defineExpose({zipcode, unmaskedCpf})
                 @update:model-value="(value) => validateCPF(value)"
                 maxlength="14"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-
             />
-
+            <span v-if="errors.cpf" class="text-red-500 text-xs">{{ errors.cpf }}</span>
           </div>
 
           <div>
             <label for="monthlyIncome" class="block text-sm font-medium text-gray-700">Renda mensal</label>
             <div class="mt-1 relative rounded-md shadow-sm">
-              <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+              <div class="absolute top-[10px] left-0 pl-3 flex items-center pointer-events-none">
                 <span class="text-gray-500 sm:text-sm">R$</span>
               </div>
               <input
@@ -251,8 +351,10 @@ defineExpose({zipcode, unmaskedCpf})
                   v-model="form.monthlyIncome"
                   @input="form.monthlyIncome = formatCurrency($event.target.value)"
                   class="block w-full pl-12 rounded-md border-gray-300 focus:border-blue-500 focus:ring-blue-500"
-
               />
+              <span v-if="errors.monthlyIncome" class="text-red-500 text-xs">{{
+                  errors.monthlyIncome
+                }}</span>
             </div>
 
           </div>
@@ -260,8 +362,8 @@ defineExpose({zipcode, unmaskedCpf})
         <div class="flex justify-end mt-6">
 
           <button
-              @click="step++"
-              class="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              @click.prevent="step++"
+              class="bg-purple-300 text-black px-4 py-2 rounded transition-all ease-in-out delay-50 hover:bg-purple-400 focus:outline-none break-words flex items-center justify-center"
           >
             Avançar
           </button>
@@ -280,6 +382,7 @@ defineExpose({zipcode, unmaskedCpf})
                 v-model="zipcodeFormatted"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
             />
+            <span v-if="errors.cep" class="text-red-500 text-xs">{{ errors.cep }}</span>
           </div>
 
 
@@ -290,9 +393,8 @@ defineExpose({zipcode, unmaskedCpf})
                 id="street"
                 v-model="form.street"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-
             />
-
+            <span v-if="errors.street" class="text-red-500 text-xs">{{ errors.street }}</span>
           </div>
 
 
@@ -303,9 +405,9 @@ defineExpose({zipcode, unmaskedCpf})
                 id="neighborhood"
                 v-model="form.neighborhood"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-
             />
 
+            <span v-if="errors.neighborhood" class="text-red-500 text-xs">{{ errors.neighborhood }}</span>
           </div>
 
 
@@ -316,9 +418,9 @@ defineExpose({zipcode, unmaskedCpf})
                 id="city"
                 v-model="form.city"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-
             />
 
+            <span v-if="errors.city" class="text-red-500 text-xs">{{ errors.city }}</span>
           </div>
 
 
@@ -331,21 +433,21 @@ defineExpose({zipcode, unmaskedCpf})
                 @input="$event.target.value = $event.target.value.toUpperCase().substring(0, 2)"
                 maxlength="2"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-
             />
 
+            <span v-if="errors.state" class="text-red-500 text-xs">{{ errors.state }}</span>
           </div>
         </div>
         <div class="flex justify-between mt-6">
           <button
-              @click="step--"
-              class="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              @click.prevent="step--"
+              class="bg-purple-300 text-black px-4 py-2 rounded transition-all ease-in-out delay-50 hover:bg-purple-400 focus:outline-none break-words flex items-center justify-center"
           >
             Voltar
           </button>
           <button
-              @click="step++"
-              class="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              @click.prevent="step++"
+              class="bg-purple-300 text-black px-4 py-2 rounded transition-all ease-in-out delay-50 hover:bg-purple-400 focus:outline-none break-words flex items-center justify-center"
           >
             Avançar
           </button>
@@ -381,7 +483,7 @@ defineExpose({zipcode, unmaskedCpf})
                 </ListboxOptions>
               </div>
             </Listbox>
-
+            <span v-if="errors.petType" class="text-red-500 text-xs">{{ errors.petType }}</span>
           </div>
 
 
@@ -414,7 +516,7 @@ defineExpose({zipcode, unmaskedCpf})
                 </ListboxOptions>
               </div>
             </Listbox>
-
+            <span v-if="errors.petBreed" class="text-red-500 text-xs">{{ errors.petBreed }}</span>
           </div>
 
 
@@ -425,23 +527,21 @@ defineExpose({zipcode, unmaskedCpf})
                 id="customBreed"
                 v-model="form.customBreed"
                 class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-
             />
 
+            <span v-if="errors.customBreed" class="text-red-500 text-xs">{{ errors.customBreed }}</span>
           </div>
         </div>
         <div class="flex justify-between mt-6">
           <button
-              @click="step--"
-              class="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              @click.prevent="step--"
+              class="bg-purple-300 text-black px-4 py-2 rounded transition-all ease-in-out delay-50 hover:bg-purple-400 focus:outline-none break-words flex items-center justify-center"
           >
             Voltar
           </button>
           <button
               @click.prevent="openModal"
-              class="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm
-          font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500
-          focus:ring-offset-2"
+              class="bg-purple-300 text-black px-4 py-2 rounded transition-all ease-in-out delay-50 hover:bg-purple-400 focus:outline-none break-words flex items-center justify-center"
           >
             Cadastrar
           </button>
@@ -451,6 +551,7 @@ defineExpose({zipcode, unmaskedCpf})
     </form>
     <TransitionRoot appear :show="isOpen" as="template">
       <Dialog as="div" @close="closeModal" class="relative z-10">
+
         <TransitionChild
             as="template"
             enter="duration-300 ease-out"
@@ -467,6 +568,8 @@ defineExpose({zipcode, unmaskedCpf})
           <div
               class="flex min-h-full items-center justify-center p-4 text-center"
           >
+            <img src="~/assets/lemonadepixel_kidschores-55.png" alt="Icone 2"
+                 class="relative -top-48 left-[460px] w-12 h-10 -rotate-6 z-10"/>
             <TransitionChild
                 as="template"
                 enter="duration-300 ease-out"
@@ -476,9 +579,11 @@ defineExpose({zipcode, unmaskedCpf})
                 leave-from="opacity-100 scale-100"
                 leave-to="opacity-0 scale-95"
             >
+
               <DialogPanel
                   class="w-full max-w-md transform overflow-hidden rounded-2xl bg-white p-6 text-left align-middle shadow-xl transition-all"
               >
+
                 <DialogTitle
                     as="h3"
                     class="text-lg font-medium leading-6 text-gray-900"
@@ -489,7 +594,8 @@ defineExpose({zipcode, unmaskedCpf})
                   <div>
                     <p><strong>Nome Completo:</strong> {{ form.fullName }}</p>
                     <p><strong>CPF:</strong> {{ form.cpf }}</p>
-                    <p><strong>Data de Nascimento:</strong> {{ form.birthDate }}</p>
+                    <p><strong>Data de Nascimento:</strong> {{ form.birthDate ? useFormatDate(form.birthDate) : '' }}
+                    </p>
                     <p><strong>CEP:</strong> {{ form.cep }}</p>
                     <p><strong>Cidade:</strong> {{ form.city }}</p>
                     <p><strong>Estado:</strong> {{ form.state }}</p>
@@ -505,10 +611,10 @@ defineExpose({zipcode, unmaskedCpf})
                 <div class="mt-4">
                   <button
                       type="button"
-                      class="inline-flex justify-center rounded-md border border-transparent bg-blue-100 px-4 py-2 text-sm font-medium text-blue-900 hover:bg-blue-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 focus-visible:ring-offset-2"
+                      class="bg-purple-300 text-black px-4 py-2 rounded transition-all ease-in-out delay-50 hover:bg-purple-400 focus:outline-none break-words flex items-center justify-center"
                       @click="handleSubmit"
                   >
-                    Got it, thanks!
+                    Confirmar
                   </button>
                 </div>
               </DialogPanel>
@@ -517,8 +623,55 @@ defineExpose({zipcode, unmaskedCpf})
         </div>
       </Dialog>
     </TransitionRoot>
+
+
+  </div>
+  <div v-if="success" id="toast-success" class="absolute top-1 right-1 flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800
+top" role="alert">
+    <div
+        class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-green-500 bg-green-100 rounded-lg dark:bg-green-800 dark:text-green-200">
+      <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+           viewBox="0 0 20 20">
+        <path
+            d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 8.207-4 4a1 1 0 0 1-1.414 0l-2-2a1 1 0 0 1 1.414-1.414L9 10.586l3.293-3.293a1 1 0 0 1 1.414 1.414Z"/>
+      </svg>
+      <span class="sr-only">Ícone de positivo</span>
+    </div>
+    <div class="ms-3 text-sm font-normal">Cadastro realizado com sucesso!</div>
+    <button type="button"
+            class="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700"
+            data-dismiss-target="#toast-success" aria-label="Close">
+      <span class="sr-only">Fechar</span>
+      <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+      </svg>
+    </button>
   </div>
 
+  <div v-if="error" id="toast-danger"
+       class="absolute top-1 right-1 flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800"
+       role="alert">
+    <div
+        class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-red-500 bg-red-100 rounded-lg dark:bg-red-800 dark:text-red-200">
+      <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
+           viewBox="0 0 20 20">
+        <path
+            d="M10 .5a9.5 9.5 0 1 0 9.5 9.5A9.51 9.51 0 0 0 10 .5Zm3.707 11.793a1 1 0 1 1-1.414 1.414L10 11.414l-2.293 2.293a1 1 0 0 1-1.414-1.414L8.586 10 6.293 7.707a1 1 0 0 1 1.414-1.414L10 8.586l2.293-2.293a1 1 0 0 1 1.414 1.414L11.414 10l2.293 2.293Z"/>
+      </svg>
+      <span class="sr-only">Ícone de erro</span>
+    </div>
+    <div class="ms-3 text-sm font-normal">Um erro ocorreu!</div>
+    <button type="button"
+            class="ms-auto -mx-1.5 -my-1.5 bg-white text-gray-400 hover:text-gray-900 rounded-lg focus:ring-2 focus:ring-gray-300 p-1.5 hover:bg-gray-100 inline-flex items-center justify-center h-8 w-8 dark:text-gray-500 dark:hover:text-white dark:bg-gray-800 dark:hover:bg-gray-700"
+            data-dismiss-target="#toast-danger" aria-label="Close">
+      <span class="sr-only">Fechar</span>
+      <svg class="w-3 h-3" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 14 14">
+        <path stroke="currentColor" stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="m1 1 6 6m0 0 6 6M7 7l6-6M7 7l-6 6"/>
+      </svg>
+    </button>
+  </div>
 </template>
 <style lang="scss">
 .slide-fade-enter-active {

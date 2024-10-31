@@ -5,7 +5,7 @@ interface IUserRegister {
     cpf: string;
     customBreed?: string;
     fullName: string;
-    monthlyIncome: number | string;
+    monthlyIncome: any;
     neighborhood: string;
     petBreed: string;
     petType: string;

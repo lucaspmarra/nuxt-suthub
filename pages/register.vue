@@ -7,9 +7,9 @@ definePageMeta({
 <template>
   <div>
     <RegisterComponent/>
+    <div
+        class="flex items-center justify-center">
+      <NuxtLink to="/">Voltar para o ínicio</NuxtLink>
+    </div>
   </div>
 </template>
-
-<style scoped>
-
-</style>

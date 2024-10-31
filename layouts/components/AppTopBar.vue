@@ -1,5 +1,23 @@
 <script setup lang="ts">
+import {onMounted} from "vue";
+import {useUserStore} from "~/stores/user-store";
 
+const userStore = useUserStore();
+const router = useRouter()
+const isLoggedIn = computed(() => userStore.isUserLoggedIn);
+
+const logout = () =>{
+  userStore.logout();
+
+  router.push({path: '/'})
+}
+
+onMounted(() => {
+  const isUserLoggedIn = localStorage.getItem('is_user_logged_in');
+  if (isUserLoggedIn === 'true') {
+    userStore.isUserLoggedIn = true;
+  }
+});
 </script>
 
 <template>
@@ -22,13 +40,17 @@
           </button>
           <button type="button"
                   class="flex items-center justify-start w-auto h-auto p-2 rounded-lg text-text-color hover:bg-surface-hover transition-all duration-300">
-            <i class="pi pi-inbox text-xl"></i>
             <NuxtLink to="/recipes">Receitas</NuxtLink>
           </button>
           <button type="button"
                   class="flex items-center justify-start w-auto h-auto p-2 rounded-lg text-text-color hover:bg-surface-hover transition-all duration-300">
-            <i class="pi pi-user text-xl"></i>
             <NuxtLink to="/users">Usuários</NuxtLink>
+          </button>
+
+          <button v-if="isLoggedIn" type="button"
+                  @click.prevent="logout"
+                  class="flex items-center justify-start w-auto h-auto p-2 rounded-lg text-text-color hover:bg-surface-hover transition-all duration-300">
+            Deslogar
           </button>
         </div>
       </div>
