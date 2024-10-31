@@ -27,7 +27,7 @@ onMounted(() => {
 
 <template>
   <div class="container mx-auto flex justify-center items-center p-4">
-    <div class="shadow-md bg-white w-1/2 p-4 rounded-lg">
+    <div class="shadow-md bg-white w-full md:w-1/2 p-4 rounded-lg">
       <div v-if="!isRegistered">
         <div class="flex justify-center -mt-20">
           <HomeSvg class="h-[600px]" :fontControlled="false"/>
@@ -41,9 +41,13 @@ onMounted(() => {
         </p>
       </div>
       <div v-else>
+        <section class="relative dark:bg-gray-900">
+          <img src="~/assets/oc-project-development.png" alt="Icone 1"
+               class="absolute top-[-60px] md:top-[-50px] left-[-60px] md:left-[-65px] w-32 md:w-44 -rotate-12" />
 
+          <img src="~/assets/lemonadepixel_kidschores-49.png" alt="Icone 3"
+               class="absolute bottom-[-25px] right-[-25px] w-12 h-10 rotate-12"/>
 
-        <section class="bg-white dark:bg-gray-900">
           <div class="py-8 px-4 mx-auto max-w-screen-xl text-center lg:py-16">
             <h1
                 class="mb-4 text-4xl font-extrabold tracking-tight leading-none text-gray-900 md:text-5xl lg:text-6xl dark:text-white"

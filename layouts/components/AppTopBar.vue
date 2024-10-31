@@ -21,7 +21,7 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="h-16 flex items-center transition-all duration-300 bg-white m-2 rounded-md">
+  <div class="h-16 flex items-center transition-all duration-300 bg-white m-2 rounded-md z-10">
     <div class="flex items-center w-80">
       <button class="mr-2 flex items-center justify-center w-10 h-10 rounded-full text-text-color">
         <i class="pi pi-bars text-xl"></i>
