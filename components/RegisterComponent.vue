@@ -49,12 +49,25 @@ const availableBreeds = computed(() => {
 const isOpen = ref<boolean>(false)
 const success = ref<boolean>(false);
 const error = ref<boolean>(false);
-
+const fullNameInput = ref<HTMLInputElement | null>(null);
+const birthDateInput = ref<HTMLInputElement | null>(null);
+const cpfInput = ref<HTMLInputElement | null>(null);
+const monthlyIncomeInput = ref<HTMLInputElement | null>(null);
+const cepInput = ref<HTMLInputElement | null>(null);
+const streetInput = ref<HTMLInputElement | null>(null);
+const neighborhoodInput = ref<HTMLInputElement | null>(null);
+const cityInput = ref<HTMLInputElement | null>(null);
+const stateInput = ref<HTMLInputElement | null>(null);
+const customBreedInput = ref<HTMLInputElement | null>(null);
 const maskedCpf = ref<string>('')
 const unmaskedCpf = ref<string>('')
 const zipcodeFormatted = ref<string>('')
 const zipcode = ref<string>('')
-
+const fieldsByStep = [
+  ['fullName', 'birthDate', 'cpf', 'monthlyIncome'],
+  ['cep', 'street', 'neighborhood', 'city', 'state'],
+  ['petType', 'petBreed', 'customBreed'],
+];
 const today = new Date()
 const minDate = new Date(today.getFullYear() - 65, today.getMonth(), today.getDate()).toISOString().split('T')[0]
 const maxDate = new Date(today.getFullYear() - 18, today.getMonth(), today.getDate()).toISOString().split('T')[0]
@@ -119,7 +132,7 @@ const validateForm = () => {
 
   const cleanedIncome = form.value.monthlyIncome
       .replace(/\./g, '')
-      .replace(',', '.')
+      .replace(',', '.');
 
   const incomeNumber = parseFloat(cleanedIncome);
 
@@ -177,7 +190,57 @@ const validateForm = () => {
     errors.value.customBreed = 'Digite a raça do pet.';
   }
 
-  return Object.keys(errors.value).length === 0;
+  /* loop fields with error and change step for use see error */
+  for (let i = 0; i < fieldsByStep.length; i++) {
+    if (fieldsByStep[i].some(field => errors.value[field])) {
+      step.value = i + 1;
+      nextTick(() => {
+        const focusOnError = (inputRef: Ref<HTMLInputElement | null>, errorKey: keyof IUserRegister) => {
+          if (errors.value[errorKey]) {
+            inputRef.value?.focus();
+          }
+        };
+
+        fieldsByStep[i].forEach(field => {
+          switch (field) {
+            case 'fullName':
+              focusOnError(fullNameInput, 'fullName');
+              break;
+            case 'birthDate':
+              focusOnError(birthDateInput, 'birthDate');
+              break;
+            case 'cpf':
+              focusOnError(cpfInput, 'cpf');
+              break;
+            case 'monthlyIncome':
+              focusOnError(monthlyIncomeInput, 'monthlyIncome');
+              break;
+            case 'cep':
+              focusOnError(cepInput, 'cep');
+              break;
+            case 'street':
+              focusOnError(streetInput, 'street');
+              break;
+            case 'neighborhood':
+              focusOnError(neighborhoodInput, 'neighborhood');
+              break;
+            case 'city':
+              focusOnError(cityInput, 'city');
+              break;
+            case 'state':
+              focusOnError(stateInput, 'state');
+              break;
+            case 'customBreed':
+              focusOnError(customBreedInput, 'customBreed');
+              break;
+          }
+        });
+      });
+      return false;
+    }
+  }
+
+  return true;
 };
 
 const handleSubmit = async () => {
@@ -241,7 +304,7 @@ defineExpose({zipcode, unmaskedCpf})
 </script>
 
 <template>
-  <div class="relative w-full max-w-3xl bg-white p-8 rounded-lg shadow-md">
+  <div class="relative w-full md:max-w-3xl bg-white p-2 md:p-8 rounded-lg shadow-md">
     <img src="~/assets/lemonadepixel_kidschores-82.png" alt="Icone 1"
          class="absolute top-[-20px] left-[-15px] w-12 h-10 -rotate-12"/>
 
@@ -531,6 +594,8 @@ defineExpose({zipcode, unmaskedCpf})
 
             <span v-if="errors.customBreed" class="text-red-500 text-xs">{{ errors.customBreed }}</span>
           </div>
+
+          <span v-if="Object.keys(errors).length > 0" class="text-red-500 text-xs">Há campos com erro, verifique com atenção!</span>
         </div>
         <div class="flex justify-between mt-6">
           <button
@@ -568,8 +633,7 @@ defineExpose({zipcode, unmaskedCpf})
           <div
               class="flex min-h-full items-center justify-center p-4 text-center"
           >
-            <img src="~/assets/lemonadepixel_kidschores-55.png" alt="Icone 2"
-                 class="relative -top-48 left-[460px] w-12 h-10 -rotate-6 z-10"/>
+
             <TransitionChild
                 as="template"
                 enter="duration-300 ease-out"
@@ -626,8 +690,9 @@ defineExpose({zipcode, unmaskedCpf})
 
 
   </div>
-  <div v-if="success" id="toast-success" class="absolute top-1 right-1 flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800
-top" role="alert">
+  <div v-if="success" id="toast-success"
+       class="absolute top-1 right-1 flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800 top z-10"
+       role="alert">
     <div
         class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-green-500 bg-green-100 rounded-lg dark:bg-green-800 dark:text-green-200">
       <svg class="w-5 h-5" aria-hidden="true" xmlns="http://www.w3.org/2000/svg" fill="currentColor"
@@ -650,7 +715,7 @@ top" role="alert">
   </div>
 
   <div v-if="error" id="toast-danger"
-       class="absolute top-1 right-1 flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800"
+       class="absolute top-1 right-1 flex items-center w-full max-w-xs p-4 mb-4 text-gray-500 bg-white rounded-lg shadow dark:text-gray-400 dark:bg-gray-800 z-10"
        role="alert">
     <div
         class="inline-flex items-center justify-center flex-shrink-0 w-8 h-8 text-red-500 bg-red-100 rounded-lg dark:bg-red-800 dark:text-red-200">
