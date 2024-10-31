@@ -7,4 +7,7 @@ export default defineNuxtConfig({
     pinia: {
         storesDirs: ['./stores/**'],
     },
+    app: {
+        baseURL: '/nuxt-suthub/'
+    }
 })
